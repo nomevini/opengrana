@@ -5,11 +5,13 @@ on:
     branches: [main]
     paths:
       - "backend/opengrana/**"
+      - "frontend/opengrana/**"
       - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "backend/opengrana/**"
+      - "frontend/opengrana/**"
       - ".github/workflows/ci.yml"
 
 permissions:
@@ -20,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  backend:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -61,3 +63,34 @@ jobs:
 
       - name: Build e testes
         run: ./mvnw --batch-mode --update-snapshots verify
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: frontend/opengrana
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v7
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/opengrana/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Testes
+        run: npm run test:run
+
+      - name: Build
+        run: npm run build
