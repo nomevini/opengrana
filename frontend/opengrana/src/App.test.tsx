@@ -4,12 +4,13 @@ import { describe, expect, it } from "vitest";
 import App from "./App";
 
 describe("App", () => {
-  it("exibe a tela inicial do OpenGrana", () => {
+  it("exibe a página de login", () => {
+    window.history.pushState({}, "", "/login");
+
     render(<App />);
 
     expect(
-      screen.getByRole("heading", { name: "Base do frontend pronta." }),
+      screen.getByRole("heading", { name: "Entrar na sua conta" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /começar projeto/i })).toBeInTheDocument();
   });
 });
