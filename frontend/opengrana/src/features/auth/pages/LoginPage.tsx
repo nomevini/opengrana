@@ -15,7 +15,7 @@ export function LoginPage() {
             <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
               <GalleryVerticalEnd className="size-4" />
             </div>
-            <span className="text-base">OpenGrana</span>
+            <span className="text-base font-semibold">OpenGrana</span>
           </a>
 
           <LoginForm className="mt-0" />

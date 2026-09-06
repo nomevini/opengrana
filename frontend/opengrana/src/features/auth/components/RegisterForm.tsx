@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/button'
 import {
   Field,
@@ -86,9 +86,9 @@ export function RegisterForm() {
 
         <FieldDescription className="text-center">
           Já tem uma conta?{' '}
-          <a href="/login" className="underline underline-offset-4">
+          <Link to="/login" className="font-medium text-primary underline underline-offset-4 hover:opacity-80">
             Entrar
-          </a>
+          </Link>
         </FieldDescription>
       </FieldGroup>
     </form>

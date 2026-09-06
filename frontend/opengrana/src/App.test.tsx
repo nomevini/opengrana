@@ -13,4 +13,14 @@ describe("App", () => {
       screen.getByRole("heading", { name: "Entrar na sua conta" }),
     ).toBeInTheDocument();
   });
+
+  it("exibe a página de cadastro", () => {
+    window.history.pushState({}, "", "/register");
+
+    render(<App />);
+
+    expect(
+      screen.getByRole("heading", { name: "Criar conta" }),
+    ).toBeInTheDocument();
+  });
 });

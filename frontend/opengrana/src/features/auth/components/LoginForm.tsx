@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -41,9 +41,9 @@ export function LoginForm({
     <form onSubmit={handleSubmit} className={cn('flex flex-col gap-6', className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Entrar na sua conta</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Entrar na sua conta</h1>
           <p className="text-sm text-balance text-muted-foreground">
-            Digite seu email abaixo para acessar sua conta
+            Digite seu email abaixo para acessar seu painel financeiro
           </p>
         </div>
 
@@ -64,6 +64,7 @@ export function LoginForm({
           <Input
             id="password"
             type="password"
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -75,16 +76,16 @@ export function LoginForm({
         )}
 
         <Field>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? 'Entrando...' : 'Entrar'}
           </Button>
         </Field>
 
         <FieldDescription className="text-center">
           Não tem uma conta?{' '}
-          <a href="/register" className="underline underline-offset-4">
+          <Link to="/register" className="font-medium text-primary underline underline-offset-4 hover:opacity-80">
             Criar conta
-          </a>
+          </Link>
         </FieldDescription>
       </FieldGroup>
     </form>
