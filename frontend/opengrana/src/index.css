@@ -24,6 +24,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: 'Fustat Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -65,15 +66,12 @@
   --ring: oklch(0.76 0.22 148);
 }
 
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
 
   body {
-    @apply bg-background text-foreground min-h-screen antialiased selection:bg-primary/20 selection:text-primary;
+    @apply bg-background text-foreground min-h-screen antialiased selection:bg-primary/20 selection:text-primary font-sans;
   }
 }
-
-
