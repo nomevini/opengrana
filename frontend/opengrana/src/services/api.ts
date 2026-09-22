@@ -13,6 +13,7 @@ class ApiClient {
   ): Promise<T> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         ...options?.headers,
@@ -24,6 +25,13 @@ class ApiClient {
       throw new Error(
         errorBody?.detail || `Request failed: ${response.status}`,
       );
+    }
+
+    if (
+      response.status === 204 ||
+      response.headers.get("content-length") === "0"
+    ) {
+      return undefined as T;
     }
 
     return response.json();

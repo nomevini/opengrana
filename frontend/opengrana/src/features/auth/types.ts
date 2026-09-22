@@ -9,10 +9,6 @@ export interface RegisterRequest {
   password: string;
 }
 
-export interface LoginResponse {
-  token: string;
-}
-
 export interface User {
   id: number;
   name: string;

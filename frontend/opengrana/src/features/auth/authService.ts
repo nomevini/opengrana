@@ -1,16 +1,9 @@
 import { api } from "@/services/api";
-import type {
-  LoginRequest,
-  LoginResponse,
-  RegisterRequest,
-  User,
-} from "./types";
+import type { LoginRequest, RegisterRequest, User } from "./types";
 
 export const authService = {
-  login: (data: LoginRequest) => api.post<LoginResponse>("/auth/login", data),
+  login: (data: LoginRequest) => api.post<void>("/auth/login", data),
+  logout: () => api.post<void>("/auth/logout", {}),
   register: (data: RegisterRequest) => api.post<User>("/users", data),
-  getCurrentUser: (token: string) =>
-    api.get<User>("/users/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
+  getCurrentUser: () => api.get<User>("/users/me"),
 };
