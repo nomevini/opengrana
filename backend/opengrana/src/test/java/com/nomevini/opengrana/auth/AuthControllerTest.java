@@ -16,8 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
 @Import(GlobalExceptionHandler.class)
@@ -36,7 +35,7 @@ class AuthControllerTest {
     private JwtService jwtService;
 
     @Test
-    void shouldReturnTokenWhenCredentialsAreValid() throws Exception {
+    void shouldSetAuthCookieWhenCredentialsAreValid() throws Exception {
         LoginRequest request = new LoginRequest("test@email.com", "password12345");
 
         when(jwtService.generateToken("test@email.com")).thenReturn("fake-token");
@@ -45,7 +44,10 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("fake-token"));
+                .andExpect(cookie().exists("access_token"))
+                .andExpect(cookie().value("access_token", "fake-token"))
+                .andExpect(cookie().httpOnly("access_token", true))
+                .andExpect(cookie().secure("access_token", true));
     }
 
     @Test
