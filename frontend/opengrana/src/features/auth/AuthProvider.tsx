@@ -4,31 +4,19 @@ import { AuthContext } from './AuthContext'
 import type { LoginRequest, User } from './types'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(
-    () => localStorage.getItem('token')
-  )
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(
-    () => !!localStorage.getItem('token')
-  )
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!token) {
-      return
-    }
-
     let isCurrent = true
 
     authService
-      .getCurrentUser(token)
+      .getCurrentUser()
       .then((fetchedUser) => {
         if (isCurrent) setUser(fetchedUser)
       })
       .catch(() => {
-        if (isCurrent) {
-          setToken(null)
-          localStorage.removeItem('token')
-        }
+        if (isCurrent) setUser(null)
       })
       .finally(() => {
         if (isCurrent) setIsLoading(false)
@@ -37,24 +25,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       isCurrent = false
     }
-  }, [token])
+  }, [])
 
   async function login(data: LoginRequest) {
     setIsLoading(true)
-    const response = await authService.login(data)
-    setToken(response.token)
-    localStorage.setItem('token', response.token)
+
+    try {
+      await authService.login(data)
+      const fetchedUser = await authService.getCurrentUser()
+      setUser(fetchedUser)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  function logout() {
-    setToken(null)
+  async function logout() {
+    await authService.logout()
     setUser(null)
-    localStorage.removeItem('token')
   }
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isAuthenticated: !!token, isLoading, login, logout }}
+      value={{ user, isAuthenticated: !!user, isLoading, login, logout }}
     >
       {children}
     </AuthContext.Provider>
