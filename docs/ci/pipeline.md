@@ -6,7 +6,7 @@ O CI roda no GitHub Actions (`.github/workflows/ci.yml`) em todo push e pull req
 flowchart LR
     T["push ou PR na main"] --> PF{"Mudou algo em<br/>backend/, frontend/<br/>ou no workflow?"}
     PF -->|não| S["Workflow não executa"]
-    PF -->|sim| B["Job backend<br/>JDK 21 + ./mvnw verify"]
+    PF -->|sim| B["Job backend<br/>JDK 25 + ./mvnw verify"]
     PF -->|sim| FE["Job frontend<br/>Node 22: lint, testes, build"]
     B --> R["Checks no PR"]
     FE --> R
@@ -16,7 +16,7 @@ flowchart LR
 
 | Job | Pasta de trabalho | Etapas |
 |---|---|---|
-| `backend` | `backend/opengrana` | Checkout, JDK 21 (Temurin) com cache Maven, `./mvnw verify` |
+| `backend` | `backend/opengrana` | Checkout, JDK 25 (Temurin) com cache Maven, `./mvnw verify` |
 | `frontend` | `frontend/opengrana` | Checkout, Node 22 com cache npm, `npm ci`, `npm run lint`, `npm run test:run`, `npm run build` |
 
 ## Configurações de segurança e economia
