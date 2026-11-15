@@ -5,7 +5,7 @@ O OpenGrana é uma aplicação de finanças pessoais open source, organizada com
 ```mermaid
 flowchart LR
     User([Usuário]) --> SPA["Frontend<br/>React + Vite + TypeScript"]
-    SPA -- "HTTPS + cookie httpOnly" --> API["Backend<br/>Spring Boot 4.1 / Java 21"]
+    SPA -- "HTTPS + cookie httpOnly" --> API["Backend<br/>Spring Boot 4.1 / Java 25"]
     API --> DB[(PostgreSQL)]
     API -. "planejado" .-> OF["Open Finance"]
     GH["GitHub Actions"] -. "CI: build + testes" .-> API
@@ -16,7 +16,7 @@ flowchart LR
 
 | Camada | Tecnologias |
 |---|---|
-| Backend | Java 21, Spring Boot 4.1, Spring Data JPA, Spring Security (JWT), Flyway, PostgreSQL, Maven |
+| Backend | Java 25, Spring Boot 4.1, Spring Data JPA, Spring Security (JWT), Flyway, PostgreSQL, Maven |
 | Frontend | React, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query |
 | Testes | JUnit, Mockito, Testcontainers, `@WebMvcTest`, Vitest |
 | CI | GitHub Actions |

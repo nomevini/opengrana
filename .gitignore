@@ -2,3 +2,6 @@
 .vscode/
 /frontend/node_modules
 .idea
+
+### Instruções locais do agente ###
+AGENTS.md
