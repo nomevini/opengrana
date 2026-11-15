@@ -35,6 +35,9 @@
     <properties>
         <java.version>25</java.version>
         <logback.version>1.6.7</logback.version>
+        <jackson-bom.version>3.1.8</jackson-bom.version>
+        <json-smart.version>2.6.1</json-smart.version>
+        <commons-codec.version>1.23.0</commons-codec.version>
     </properties>
 
     <dependencyManagement>
@@ -96,6 +99,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.skyscreamer</groupId>
+                    <artifactId>jsonassert</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>me.paulschwarz</groupId>
