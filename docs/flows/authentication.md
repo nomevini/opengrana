@@ -33,7 +33,11 @@ sequenceDiagram
         R-->>F: 401
     else token válido
         R->>UC: requisição autenticada
-        UC-->>F: 200 UserResponse
+        alt usuário do token não existe mais
+            UC-->>F: 401 ProblemDetail
+        else usuário existe
+            UC-->>F: 200 UserResponse
+        end
     end
 
     Note over U,UC: 3. Logout
@@ -54,7 +58,7 @@ sequenceDiagram
 
 ## Como o frontend sabe se há sessão
 
-Como o token é inacessível ao JavaScript, o `AuthProvider` chama `GET /users/me` ao montar. Se a chamada responde `200`, há sessão; se responde `401`, não há.
+Como o token é inacessível ao JavaScript, o `AuthProvider` chama `GET /users/me` ao montar. Se a chamada responde `200`, há sessão; se responde `401`, não há. Isso inclui o caso de um token ainda válido cujo usuário foi removido: a API responde `401` e o frontend volta ao estado deslogado.
 
 ## Rotas públicas
 
@@ -66,7 +70,7 @@ Origens permitidas vêm de `cors.allowed-origins` (variável `CORS_ALLOWED_ORIGI
 
 ## Limitações conhecidas
 
-- **Token não revogável:** o logout apenas instrui o navegador a descartar o cookie. Um token já emitido continua válido até expirar, e desativar um usuário (`active = false`) não derruba tokens existentes.
+- **Token não revogável:** o logout apenas instrui o navegador a descartar o cookie. Um token já emitido continua válido até expirar, e desativar um usuário (`active = false`) não derruba tokens existentes. O `GET /users/me` só responde `401` quando o registro deixa de existir; um usuário desativado com token válido ainda recebe `200` nesse endpoint.
 - **Sem rate limiting** nem bloqueio de conta após tentativas falhas de login.
 - **Sem verificação de email** no cadastro.
 
