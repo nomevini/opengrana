@@ -8,10 +8,12 @@ flowchart TD
     H -->|EmailAlreadyExistsException| A["409 Conflict"]
     H -->|MethodArgumentNotValidException| B["400 Bad Request<br/>+ campos inválidos"]
     H -->|BadCredentialsException| C["401 Unauthorized"]
+    H -->|UsernameNotFoundException| N["401 Unauthorized<br/>usuário do token não existe mais"]
     H -->|Qualquer outra Exception| D["500 Internal Server Error<br/>(detalhes só no log)"]
     A --> P["Resposta ProblemDetail (RFC 7807)"]
     B --> P
     C --> P
+    N --> P
     D --> P
 ```
 
@@ -22,6 +24,7 @@ flowchart TD
 | `EmailAlreadyExistsException` | 409 | Mensagem inclui o email informado |
 | `MethodArgumentNotValidException` | 400 | Inclui a lista `errors` com `field` e `message` |
 | `BadCredentialsException` | 401 | Mensagem genérica, sem distinguir email inexistente de senha errada |
+| `UsernameNotFoundException` | 401 | Usuário referenciado por um token válido deixou de existir; `detail` genérico, sem expor o email |
 | `Exception` (genérico) | 500 | Mensagem genérica; stacktrace só no log do servidor |
 
 ## Exemplos de resposta
@@ -49,9 +52,20 @@ Validação:
 }
 ```
 
+Usuário do token removido:
+
+```json
+{
+  "title": "Unauthorized",
+  "status": 401,
+  "detail": "The authenticated user no longer exists"
+}
+```
+
 ## Decisões de segurança
 
 - **Login:** a resposta de credenciais inválidas nunca diferencia "email não encontrado" de "senha incorreta", para impedir enumeração de contas.
+- **Usuário removido com token válido:** o `GET /users/me` responde `401`, não `500`. O email vem do próprio token já autenticado, então a resposta genérica não cria vetor de enumeração.
 - **Erro genérico (500):** nunca devolve `ex.getMessage()`, para não vazar detalhes internos (tabelas, bibliotecas, caminhos).
 - **Recurso de outro usuário:** responde `404`, não `403`, para não confirmar que o recurso existe.
 
