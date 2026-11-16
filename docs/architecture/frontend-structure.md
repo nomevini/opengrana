@@ -6,6 +6,7 @@ SPA em React com Vite, organizada por feature. Componentes genéricos ficam em `
 flowchart TB
     Main["main.tsx"] --> AP[AuthProvider]
     AP --> Router["BrowserRouter / Routes"]
+    Router --> LAND[LandingPage]
     Router --> LP[LoginPage] --> LF[LoginForm]
     Router --> RP[RegisterPage] --> RF[RegisterForm]
     Router --> PR[ProtectedRoute] --> DASH["Dashboard (placeholder)"]
@@ -25,14 +26,17 @@ flowchart TB
 ```
 src/
 ├── features/
-│   └── auth/
-│       ├── components/     LoginForm, RegisterForm
-│       ├── pages/          LoginPage, RegisterPage
-│       ├── AuthContext.ts  só o createContext
-│       ├── AuthProvider.tsx
-│       ├── useAuth.ts
-│       ├── authService.ts
-│       └── types.ts
+│   ├── auth/
+│   │   ├── components/     LoginForm, RegisterForm
+│   │   ├── pages/          LoginPage, RegisterPage
+│   │   ├── AuthContext.ts  só o createContext
+│   │   ├── AuthProvider.tsx
+│   │   ├── useAuth.ts
+│   │   ├── authService.ts
+│   │   └── types.ts
+│   └── landing/
+│       ├── components/     AsciiGlobe
+│       └── pages/          LandingPage
 ├── shared/
 │   ├── components/
 │   │   ├── ui/             componentes do shadcn/ui
