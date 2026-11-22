@@ -5,3 +5,8 @@
 
 ### Instruções locais do agente ###
 AGENTS.md
+
+### Configuração local do OpenCode ###
+opencode.json
+opencode.jsonc
+.opencode/

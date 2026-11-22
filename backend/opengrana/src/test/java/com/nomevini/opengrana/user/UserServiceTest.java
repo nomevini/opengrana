@@ -2,6 +2,7 @@ package com.nomevini.opengrana.user;
 
 import com.nomevini.opengrana.user.dto.CreateUserRequest;
 import com.nomevini.opengrana.user.dto.UserResponse;
+import com.nomevini.opengrana.user.exception.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
