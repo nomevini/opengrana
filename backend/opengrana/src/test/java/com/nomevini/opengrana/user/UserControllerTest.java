@@ -1,29 +1,20 @@
 package com.nomevini.opengrana.user;
 
-// ✅ Jackson 3 (Boot 4.x)
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import tools.jackson.databind.ObjectMapper;
 import com.nomevini.opengrana.exception.GlobalExceptionHandler;
+import com.nomevini.opengrana.support.ArgumentResolverConfig;
+import com.nomevini.opengrana.support.SecurityTestSupport;
 import com.nomevini.opengrana.user.dto.CreateUserRequest;
 import com.nomevini.opengrana.user.dto.UserResponse;
-import org.junit.jupiter.api.AfterEach;
+import com.nomevini.opengrana.user.exception.EmailAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.List;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -33,8 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
-@Import({GlobalExceptionHandler.class, UserControllerTest.ArgumentResolverConfig.class})
-class UserControllerTest {
+@Import({GlobalExceptionHandler.class, ArgumentResolverConfig.class})
+class UserControllerTest extends SecurityTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,14 +35,6 @@ class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
-
-    @TestConfiguration
-    static class ArgumentResolverConfig implements WebMvcConfigurer {
-        @Override
-        public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-            resolvers.add(new AuthenticationPrincipalArgumentResolver());
-        }
-    }
 
     @Test
     void shouldReturn201WhenUserIsCreated() throws Exception {
@@ -105,24 +88,5 @@ class UserControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401))
                 .andExpect(jsonPath("$.title").value("Unauthorized"));
-    }
-
-    private static RequestPostProcessor withJwt(String subject) {
-        return request -> {
-            Jwt jwt = Jwt.withTokenValue("test-token")
-                    .header("alg", "none")
-                    .subject(subject)
-                    .build();
-
-            var context = SecurityContextHolder.createEmptyContext();
-            context.setAuthentication(new JwtAuthenticationToken(jwt));
-            SecurityContextHolder.setContext(context);
-            return request;
-        };
-    }
-
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
     }
 }

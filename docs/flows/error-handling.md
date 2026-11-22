@@ -1,41 +1,61 @@
 # Tratamento de erros
 
-Todas as respostas de erro da API seguem a [RFC 7807 (Problem Details)](https://datatracker.ietf.org/doc/html/rfc7807), usando a classe `ProblemDetail` do Spring. O tratamento é centralizado no `GlobalExceptionHandler` (`@RestControllerAdvice`). Contexto da decisão em [ADR 0003](../adr/0003-problem-details-for-errors.md).
+Todas as respostas de erro da API seguem a [RFC 9457 (Problem Details)](https://www.rfc-editor.org/rfc/rfc9457), usando a classe `ProblemDetail` do Spring. O tratamento é centralizado no `GlobalExceptionHandler` (`@RestControllerAdvice`). Contexto da decisão em [ADR 0003](../adr/0003-problem-details-for-errors.md).
+
+O filtro `CorrelationIdFilter` aceita `X-Request-Id` ou gera um UUID, devolve o header na resposta e coloca o valor no `MDC` como `traceId`. Quando há erro, o `ProblemDetail` inclui `traceId`.
 
 ```mermaid
 flowchart TD
     E[Exception lançada] --> H{GlobalExceptionHandler}
     H -->|EmailAlreadyExistsException| A["409 Conflict"]
     H -->|MethodArgumentNotValidException| B["400 Bad Request<br/>+ campos inválidos"]
+    H -->|HttpMessageNotReadableException / MethodArgumentTypeMismatchException| I["400 Invalid request"]
     H -->|BadCredentialsException| C["401 Unauthorized"]
     H -->|UsernameNotFoundException| N["401 Unauthorized<br/>usuário do token não existe mais"]
+    H -->|AccountNotfoundException| NF["404 Account not found"]
+    H -->|InvalidCurrencyException / InvalidIfMatchException| IC["400 Bad Request"]
+    H -->|MissingIfMatchException| PR["428 Precondition required"]
+    H -->|StaleAccountException / OptimisticLockingFailureException| PS["412 Precondition failed"]
     H -->|Qualquer outra Exception| D["500 Internal Server Error<br/>(detalhes só no log)"]
-    A --> P["Resposta ProblemDetail (RFC 7807)"]
+    A --> P["Resposta ProblemDetail (RFC 9457)<br/>+ type + traceId"]
     B --> P
+    I --> P
     C --> P
     N --> P
+    NF --> P
+    IC --> P
+    PR --> P
+    PS --> P
     D --> P
 ```
 
 ## Mapeamento atual
 
-| Exception | Status | Observação |
+| Exception | Status | `type` |
 |---|---|---|
-| `EmailAlreadyExistsException` | 409 | Mensagem inclui o email informado |
-| `MethodArgumentNotValidException` | 400 | Inclui a lista `errors` com `field` e `message` |
-| `BadCredentialsException` | 401 | Mensagem genérica, sem distinguir email inexistente de senha errada |
-| `UsernameNotFoundException` | 401 | Usuário referenciado por um token válido deixou de existir; `detail` genérico, sem expor o email |
-| `Exception` (genérico) | 500 | Mensagem genérica; stacktrace só no log do servidor |
+| `EmailAlreadyExistsException` | 409 | `email-already-in-use` |
+| `MethodArgumentNotValidException` | 400 | `validation-failed` |
+| `HttpMessageNotReadableException`, `MethodArgumentTypeMismatchException` | 400 | `invalid-request` |
+| `BadCredentialsException` | 401 | `invalid-credentials` |
+| `UsernameNotFoundException` | 401 | `user-not-found` |
+| `AccountNotfoundException` | 404 | `account-not-found` |
+| `InvalidCurrencyException` | 400 | `invalid-currency` |
+| `InvalidIfMatchException` | 400 | `invalid-if-match` |
+| `MissingIfMatchException` | 428 | `if-match-required` |
+| `StaleAccountException`, `OptimisticLockingFailureException` | 412 | `stale-version` |
+| `Exception` (genérico) | 500 | `internal-error` |
 
 ## Exemplos de resposta
 
-Email duplicado:
+Conta não encontrada ou de outro usuário:
 
 ```json
 {
-  "title": "Email already in use",
-  "status": 409,
-  "detail": "Email already in use: test@email.com"
+  "type": "https://opengrana.dev/problems/account-not-found",
+  "title": "Account not found",
+  "status": 404,
+  "detail": "Account not found or does not belong to the authenticated user",
+  "traceId": "0c9e5e0b-6f6a-4f2a-9f2c-1b6d0f0a2f3d"
 }
 ```
 
@@ -43,6 +63,7 @@ Validação:
 
 ```json
 {
+  "type": "https://opengrana.dev/problems/validation-failed",
   "title": "Validation failed",
   "status": 400,
   "detail": "One or more fields are invalid",
@@ -52,27 +73,18 @@ Validação:
 }
 ```
 
-Usuário do token removido:
-
-```json
-{
-  "title": "Unauthorized",
-  "status": 401,
-  "detail": "The authenticated user no longer exists"
-}
-```
-
 ## Decisões de segurança
 
 - **Login:** a resposta de credenciais inválidas nunca diferencia "email não encontrado" de "senha incorreta", para impedir enumeração de contas.
-- **Usuário removido com token válido:** o `GET /users/me` responde `401`, não `500`. O email vem do próprio token já autenticado, então a resposta genérica não cria vetor de enumeração.
-- **Erro genérico (500):** nunca devolve `ex.getMessage()`, para não vazar detalhes internos (tabelas, bibliotecas, caminhos).
+- **Usuário removido com token válido:** responde `401`, não `500`. O email vem do próprio token já autenticado, então a resposta genérica não cria vetor de enumeração.
 - **Recurso de outro usuário:** responde `404`, não `403`, para não confirmar que o recurso existe.
+- **Erro genérico (500):** nunca devolve `ex.getMessage()`, para não vazar detalhes internos (tabelas, bibliotecas, caminhos).
+- **`type` é URI estável:** o cliente deve programar contra ele, não contra `detail`.
 
 ## Como adicionar uma nova exception
 
 1. Criar a exception de negócio (estendendo `RuntimeException`).
-2. Adicionar um método `@ExceptionHandler` no `GlobalExceptionHandler` com o status semanticamente correto.
+2. Adicionar um método `@ExceptionHandler` no `GlobalExceptionHandler` com o status semanticamente correto e um `type` estável.
 3. Cobrir o cenário com um teste `@WebMvcTest`.
 
 Não é preciso mexer em controllers.

@@ -2,6 +2,7 @@ package com.nomevini.opengrana.user;
 
 import com.nomevini.opengrana.user.dto.CreateUserRequest;
 import com.nomevini.opengrana.user.dto.UserResponse;
+import com.nomevini.opengrana.user.exception.EmailAlreadyExistsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,11 @@ public class UserService {
         return new UserResponse(savedUser.getId(), savedUser.getName(), savedUser.getEmail());
     }
 
+    public User requireByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+    }
+
     public UserResponse getCurrentUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
@@ -48,6 +54,4 @@ public class UserService {
                 user.getEmail()
         );
     }
-
-
 }

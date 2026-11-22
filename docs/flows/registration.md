@@ -1,6 +1,6 @@
 # Fluxo de cadastro
 
-`POST /users` é público (não exige autenticação). A senha é criptografada com BCrypt antes de persistir e o usuário nasce com o papel `USER`.
+`POST /users` é público (não exige autenticação). A senha é criptografada com BCrypt antes de persistir e o usuário nasce com o papel `USER`. As respostas de erro seguem a RFC 9457 (ver [Tratamento de erros](error-handling.md)).
 
 ```mermaid
 sequenceDiagram
@@ -41,10 +41,10 @@ sequenceDiagram
 
 ## Respostas
 
-| Situação | Status |
-|---|---|
-| Usuário criado | `201 Created` com `UserResponse` (id, name, email) |
-| Campos inválidos | `400 Bad Request` com a lista de campos que falharam |
-| Email já cadastrado | `409 Conflict` |
+| Situação | Status | `type` do erro |
+|---|---|---|
+| Usuário criado | `201 Created` com `UserResponse` (id, name, email) | — |
+| Campos inválidos | `400 Bad Request` com a lista de campos que falharam | `validation-failed` |
+| Email já cadastrado | `409 Conflict` | `email-already-in-use` |
 
-A resposta nunca inclui a senha, nem em hash.
+A resposta nunca inclui a senha, nem em hash. Erros também trazem `traceId` quando o cliente envia `X-Request-Id` (ou quando o filtro gera um).

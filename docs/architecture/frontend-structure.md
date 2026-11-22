@@ -40,7 +40,8 @@ src/
 ├── shared/
 │   ├── components/
 │   │   ├── ui/             componentes do shadcn/ui
-│   │   └── ProtectedRoute.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   └── ThemeToggle.tsx
 │   └── lib/utils.ts
 └── services/
     └── api.ts              cliente HTTP base
@@ -52,3 +53,9 @@ src/
 - **Sem token no JavaScript.** O `AuthProvider` descobre se há sessão chamando `GET /users/me` ao montar. `isAuthenticated` é derivado da existência do usuário carregado.
 - **`AuthContext` e `AuthProvider` em arquivos separados**, por causa da regra do Fast Refresh (um arquivo deve exportar apenas componentes).
 - **`credentials: 'include'`** em todas as requisições do `api.ts`, para o navegador enviar e aceitar o cookie de sessão.
+
+## Integração com o backend
+
+O contrato de contas manuais já existe no backend (`POST/GET/PATCH/DELETE /accounts`), mas **ainda não há feature, tela ou serviço de contas no frontend** — o dashboard segue como placeholder. Quando essa feature entrar, ela deve virar `src/features/accounts/`, seguindo a mesma separação de `components/`, `pages/` e `services`.
+
+O cliente HTTP precisará enviar `If-Match` no `PATCH`/`DELETE` e ler o `ETag` devolvido, além de repetir `X-Request-Id` se quiser correlacionar erros. Esses headers já estão liberados no CORS. Detalhes em [Fluxo de contas](../flows/accounts.md) e [Tratamento de erros](../flows/error-handling.md).

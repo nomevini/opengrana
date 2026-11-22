@@ -29,9 +29,10 @@ flowchart LR
 
 O contexto do Spring exige variáveis que localmente vêm do `.env` (que nunca vai para o Git). No CI elas são definidas no `env:` **do job**, com valores fictícios e descartáveis:
 
-- `JWT_SECRET_KEY` (mínimo de 32 caracteres)
-- `CORS_ALLOWED_ORIGINS`
-- credenciais do banco, quando o job usa um Postgres de serviço
+- `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`: apontam para o Postgres de serviço do job.
+- `JWT_SECRET_KEY`: chave de teste com mais de 32 caracteres.
+
+O perfil ativo é `dev` (padrão em `application.yaml`), então `CORS_ALLOWED_ORIGINS` usa o valor local `http://localhost:5173` e **não** precisa ser definido no CI. A variável só é obrigatória no perfil `prod`, onde não há padrão.
 
 Nunca use no CI os valores reais de produção. Se um workflow futuro (como deploy) precisar de segredos reais, eles devem vir de GitHub Secrets (`${{ secrets.NOME }}`).
 
@@ -39,7 +40,12 @@ Nunca use no CI os valores reais de produção. Se um workflow futuro (como depl
 
 ## Testes de integração
 
-Os testes de repositório usam Testcontainers e precisam de Docker. O runner `ubuntu-latest` já traz Docker instalado.
+Há dois caminhos de banco nos testes:
+
+- `@SpringBootTest` usa o Postgres de serviço do workflow, via `DB_URL` do job.
+- `@DataJpaTest` com Testcontainers sobe um `postgres:17` próprio e descartável por classe de teste.
+
+O runner `ubuntu-latest` já traz Docker instalado, necessário para o Testcontainers.
 
 ## Melhorias futuras
 

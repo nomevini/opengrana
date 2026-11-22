@@ -6,15 +6,19 @@ Login com email e senha gera um JWT (HS256, 60 minutos) entregue em um cookie `h
 sequenceDiagram
     actor U as Usuário
     participant F as Frontend
+    participant CIF as CorrelationIdFilter
     participant AC as AuthController
     participant AM as AuthenticationManager
     participant J as JwtService
     participant R as CookieBearerTokenResolver
     participant UC as UserController
 
+    Note over F,CIF: CorrelationIdFilter usa X-Request-Id ou gera um UUID,<br/>devolve o header e grava traceId no MDC
+
     Note over U,UC: 1. Login
     U->>F: Informa email e senha
-    F->>AC: POST /auth/login
+    F->>CIF: POST /auth/login
+    CIF->>AC: request com traceId
     AC->>AM: authenticate(email, senha)
     Note right of AM: UserDetailsServiceImpl busca o usuário e BCrypt compara a senha
     alt credenciais inválidas
@@ -27,7 +31,8 @@ sequenceDiagram
     end
 
     Note over U,UC: 2. Requisição autenticada
-    F->>R: GET /users/me com cookie access_token
+    F->>CIF: GET /users/me com cookie access_token
+    CIF->>R: request com traceId
     R->>R: Extrai e valida o JWT
     alt token ausente, inválido ou expirado
         R-->>F: 401
@@ -41,7 +46,8 @@ sequenceDiagram
     end
 
     Note over U,UC: 3. Logout
-    F->>AC: POST /auth/logout
+    F->>CIF: POST /auth/logout
+    CIF->>AC: request com traceId
     AC-->>F: 200 + Set-Cookie access_token (Max-Age=0)
 ```
 
@@ -66,7 +72,13 @@ Como o token é inacessível ao JavaScript, o `AuthProvider` chama `GET /users/m
 
 ## CORS
 
-Origens permitidas vêm de `cors.allowed-origins` (variável `CORS_ALLOWED_ORIGINS`), nunca `*`, porque a API usa credenciais. Em desenvolvimento: `http://localhost:5173`.
+Origens permitidas vêm de `cors.allowed-origins` (variável `CORS_ALLOWED_ORIGINS`), nunca `*`, porque a API usa credenciais. Em desenvolvimento o padrão é `http://localhost:5173`; em produção a variável é obrigatória.
+
+A configuração cobre os métodos `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`. Além de `Authorization` e `Content-Type`, o navegador pode enviar `If-Match` e `X-Request-Id`; `ETag` e `X-Request-Id` são expostos ao JavaScript. Isso é necessário para o fluxo de concorrência otimista das contas (ver [Fluxo de contas](accounts.md)).
+
+## Correlação de requisições
+
+`CorrelationIdFilter` aceita o header `X-Request-Id` enviado pelo cliente ou gera um UUID quando ele não vem. O mesmo valor é devolvido na resposta e gravado no `MDC` como `traceId`; quando a requisição termina com erro, o `ProblemDetail` inclui esse `traceId`. Assim, um erro reportado pelo usuário pode ser localizado nos logs sem expor detalhes internos.
 
 ## Limitações conhecidas
 

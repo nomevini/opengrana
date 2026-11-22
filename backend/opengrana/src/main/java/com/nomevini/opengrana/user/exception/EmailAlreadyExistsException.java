@@ -1,4 +1,4 @@
-package com.nomevini.opengrana.user;
+package com.nomevini.opengrana.user.exception;
 
 public class EmailAlreadyExistsException extends RuntimeException {
     public EmailAlreadyExistsException(String email) {
