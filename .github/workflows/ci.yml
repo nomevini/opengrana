@@ -3,26 +3,40 @@ name: CI
 on:
   push:
     branches: [main]
-    paths:
-      - "backend/opengrana/**"
-      - "frontend/opengrana/**"
-      - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "backend/opengrana/**"
-      - "frontend/opengrana/**"
-      - ".github/workflows/ci.yml"
 
 permissions:
   contents: read
+  pull-requests: read # necessário para o dorny/paths-filter detectar arquivos do PR
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          base: ${{ github.ref }} # em push na main, compara com o commit anterior
+          filters: |
+            backend:
+              - "backend/opengrana/**"
+              - ".github/workflows/ci.yml"
+            frontend:
+              - "frontend/opengrana/**"
+              - ".github/workflows/ci.yml"
+
   backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -66,6 +80,8 @@ jobs:
         run: ./mvnw --batch-mode --update-snapshots verify
 
   frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
