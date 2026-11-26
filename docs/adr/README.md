@@ -9,7 +9,7 @@ Cada ADR registra uma decisão difícil de reverter, com contexto, decisão, con
 | [0003](0003-problem-details-for-errors.md) | Problem Details (RFC 9457) para erros | Aceito |
 | [0004](0004-representacao-de-dinheiro.md) | Representação de dinheiro | Aceito |
 | [0005](0005-saldo-derivado.md) | Saldo derivado | Aceito |
-| [0006](0006-transacoes.md) | Ciclo de vida e correção de transações | Reservado (fase seguinte) |
+| [0006](0006-transacoes.md) | Ciclo de vida e correção de transações | Aceito |
 | [0007](0007-identidade-publica-e-isolamento.md) | Identidade pública e isolamento | Aceito |
 | [0008](0008-ciclo-de-vida-e-concorrencia.md) | Ciclo de vida de conta e concorrência | Aceito |
 

@@ -16,6 +16,7 @@ Os diagramas usam [Mermaid](https://mermaid.js.org/) e são renderizados automat
 - [Cadastro de usuário](flows/registration.md)
 - [Autenticação e sessão](flows/authentication.md)
 - [Contas manuais](flows/accounts.md)
+- [Transações (em planejamento)](flows/transactions.md)
 - [Tratamento de erros](flows/error-handling.md)
 
 ## CI/CD
